@@ -1,0 +1,43 @@
+cmake_minimum_required(VERSION 3.20)
+project(main)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_SCAN_FOR_MODULES OFF CACHE BOOL "Disable C++ module scanning" FORCE)
+
+if(MSVC)
+  add_compile_options(/MP /Zc:preprocessor /permissive-)
+  add_compile_options(/Bt)
+  set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} /DEBUG:FASTLINK")
+  set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} /DEBUG:FASTLINK")
+  set(CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE)
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Zi /Od")
+endif()
+
+set(CMAKE_UNITY_BUILD OFF)
+
+set(EXTERNAL_PATH ${CMAKE_SOURCE_DIR}/external)
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+
+file(GLOB_RECURSE MAIN_SOURCES CONFIGURE_DEPENDS
+  "${CMAKE_SOURCE_DIR}/source/*.cpp")
+
+add_executable(main ${MAIN_SOURCES})
+
+target_precompile_headers(main PRIVATE
+  "${CMAKE_SOURCE_DIR}/source/pch.hpp"
+)
+
+set_source_files_properties(
+  "${CMAKE_SOURCE_DIR}/source/olc_impl.cpp"
+  PROPERTIES
+  SKIP_PRECOMPILE_HEADERS ON
+  SKIP_UNITY_BUILD_INCLUSION ON
+)
+
+target_include_directories(main SYSTEM PRIVATE
+  ${EXTERNAL_PATH}
+)
+
+file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
