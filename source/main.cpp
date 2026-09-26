@@ -6,7 +6,9 @@
    $Notice: (C) Copyright 2026 by Behiri! All Rights Reserved.$
    ======================================================================== */
 
-#include "olcPixelGameEngine3.h"
+#include "arena.hpp"
+#include "game.hpp"
+#include "config.hpp"
 
 struct Application : public olc::PixelGameEngine {
     Application() {
@@ -14,6 +16,12 @@ struct Application : public olc::PixelGameEngine {
     }
 
     bool OnUserCreate() override {
+        arena = new Arena();
+        arena->create(1024 * 1024 * 2);
+
+        game = arena->alloc<Game>();
+        game->create(arena, this);
+        
         return true;
     }
 
@@ -24,14 +32,25 @@ struct Application : public olc::PixelGameEngine {
             return false;
         }
 
+
+        game->tick();
+        game->render();
+            
         return true;
     }
+
+private:
+    Arena *arena;
+    Game *game;
 };
 
 int main() {
     Application app;
 
-    if (app.Construct({ 256, 240 }, { 4, 4 })) {
+    if(app.Construct(
+            { SCREEN_WIDTH, SCREEN_HEIGHT },
+            { SCREEN_SCALE_X, SCREEN_SCALE_Y })
+    ) {
         app.Start();
     }
 
